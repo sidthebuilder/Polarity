@@ -7,13 +7,18 @@
 import { GoogleGenAI, Modality } from "@google/genai";
 import { extractHtmlFromText } from "../utils/html";
 
-// Initialize Gemini Client
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+let ai: GoogleGenAI | null = null;
+
+export const setApiKey = (key: string) => {
+    ai = new GoogleGenAI({ apiKey: key });
+};
 
 export const IMAGE_SYSTEM_PROMPT = "Generate an isolated object/scene on a simple background.";
 export const VOXEL_PROMPT = "I have provided an image. Code a beautiful voxel art scene inspired by this image. Write threejs code as a single-page.";
 
 export const generateImage = async (prompt: string, aspectRatio: string = '1:1', optimize: boolean = true): Promise<string> => {
+  if (!ai) throw new Error("API Key has not been set.");
+
   try {
     let finalPrompt = prompt;
 
@@ -70,6 +75,8 @@ export const generateVoxelScene = async (
   let fullHtml = "";
 
   try {
+    if (!ai) throw new Error("API Key has not been set.");
+
     // Using gemini-3-pro-preview for complex code generation with thinking
     const response = await ai.models.generateContentStream({
       model: 'gemini-3-pro-preview',

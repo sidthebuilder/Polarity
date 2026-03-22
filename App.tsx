@@ -5,7 +5,7 @@
 
 
 import React, { useState, useRef, useEffect } from 'react';
-import { generateImage, generateVoxelScene, IMAGE_SYSTEM_PROMPT, VOXEL_PROMPT } from './services/gemini';
+import { generateImage, generateVoxelScene, IMAGE_SYSTEM_PROMPT, VOXEL_PROMPT, setApiKey } from './services/gemini';
 import { extractHtmlFromText, hideBodyText, zoomCamera } from './utils/html';
 
 type AppStatus = 'idle' | 'generating_image' | 'generating_voxels' | 'error';
@@ -43,6 +43,15 @@ const EXAMPLES: Example[] = [
 ];
 
 const App: React.FC = () => {
+  const [apiKey, setApiKeyState] = useState(() => localStorage.getItem('gemini_api_key') || '');
+  
+  useEffect(() => {
+    if (apiKey) {
+      setApiKey(apiKey);
+      localStorage.setItem('gemini_api_key', apiKey);
+    }
+  }, [apiKey]);
+
   const [prompt, setPrompt] = useState('');
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   
@@ -401,6 +410,17 @@ const App: React.FC = () => {
         <div className="text-center border-b-2 border-black pb-6">
           <h1 className="text-4xl sm:text-5xl font-black leading-[0.9] tracking-tight">IMAGE TO VOXEL ART</h1>
           <p className="mt-2 text-lg text-gray-600 font-semibold">Create voxel art scenes inspired by any image, with Gemini 3.</p>
+          
+          <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-2 max-w-md mx-auto">
+            <input 
+              type="password" 
+              placeholder="Enter Gemini API Key to Generate" 
+              className="w-full px-3 py-2 border-2 border-black text-sm focus:outline-none placeholder-gray-400"
+              value={apiKey}
+              onChange={(e) => setApiKeyState(e.target.value)}
+            />
+            {!apiKey && <span className="text-xs text-red-500 font-bold whitespace-nowrap">API Key Required</span>}
+          </div>
         </div>
 
         {/* Example Tiles & User Tile */}
